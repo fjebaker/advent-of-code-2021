@@ -4,7 +4,9 @@ file = "day1/input.txt"
 values = parse.(Int, eachline(file))
 
 function part1(values)
-    count(>(0), diff(values))
+    count(1:lastindex(values)) do i
+        @inbounds values[i] < values[i+1]
+    end
 end
 
 function part2(values)
