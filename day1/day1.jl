@@ -18,7 +18,9 @@ function part2(values)
 end
 
 @btime part1($values)
+# 368.485 ns (0 allocations: 0 bytes)
 println("Part 1: $(part1(values))")
 
 @btime part2($values)
+# 189.950 ns (0 allocations: 0 bytes)
 println("Part 2: $(part2(values))")
