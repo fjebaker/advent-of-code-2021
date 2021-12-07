@@ -1,6 +1,7 @@
 using BenchmarkTools
 
 function parse_fish(path)
+    # 10 slots where 1st index is fish to reproduce
     living = zeros(Int, 10)
     open(path) do io
         fish = parse.(Int, split(readline(io), ','))
@@ -18,9 +19,9 @@ function evolveday!(living, day)
     i6 = daymod(day + 7)
     i8 = daymod(day + 9)
 
-    living[i6] += living[i0]
-    living[i8] += living[i0]
-    living[i0] = 0
+    @inbounds living[i6] += living[i0]
+    @inbounds living[i8] += living[i0]
+    @inbounds living[i0] = 0
 end
 
 function part1(living)
