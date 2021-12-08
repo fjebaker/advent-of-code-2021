@@ -1,8 +1,8 @@
 using BenchmarkTools
 
-crabs = parse.(Int, split(readline("day7/input.txt"), ','))
 
-medianpos(crabs) = convert(Int, median(crabs))
+
+medianpos(crabs) = round(Int, median(crabs))
 fuelneeded(crabs, pos) = sum(i -> abs(i-pos), crabs)
 
 part1(crabs) = fuelneeded(crabs, medianpos(crabs))
@@ -15,7 +15,7 @@ end
 function part2(crabs)
     #minimum(map(i -> fuelneededpoly(crabs, i), range(minimum(crabs), maximum(crabs))))
     minfuel = typemax(Int)
-    for i in range(minimum(crabs), maximum(crabs))
+    for i in range(0, maximum(crabs))
         fuel = fuelneededpoly(crabs, i)
         if fuel < minfuel
             minfuel = fuel
@@ -33,3 +33,9 @@ end
 
 println("Part1: $(part1(crabs))")
 println("Part1: $(part2(crabs))")
+
+
+# one liner solutions
+crabs = parse.(Int, split(readline("day7/input.txt"), ','))
+part1(crabs) = crabs .- median(crabs) .|> abs |> sum
+part2(crabs) = minimum(sum(map(i->i*(i+1)÷2, abs.(crabs .- i)) for i in 0:maximum(crabs)))

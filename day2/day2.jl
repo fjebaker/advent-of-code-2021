@@ -9,14 +9,9 @@ function part1(instructions)
     for i in instructions
         v = parse(Int, last(i))
         d = first(i)
-
-        if d == 'u'
-            depth -= v
-        elseif d == 'd'
-            depth += v
-        else
-            pos += v
-        end
+        d == 'u' && (depth -= v)
+        d == 'd' && (depth += v)
+        d == 'f' && (pos += v)
     end
 
     depth * pos
@@ -24,7 +19,7 @@ end
 
 
 @btime part1(instructions)
-# 14.776 μs (1 allocation: 16 bytes)
+# 9.534 μs (1 allocation: 16 bytes)
 
 println("Part1 = $(part1(instructions))")
 
@@ -37,15 +32,9 @@ function part2(instructions)
     for i in instructions
         v = parse(Int, last(i))
         d = first(i)
-
-        if d == 'u'
-            aim -= v
-        elseif d == 'd'
-            aim += v
-        else
-            pos += v
-            depth += v * aim
-        end
+        d == 'u' && (aim -= v)
+        d == 'd' && (aim += v)
+        d == 'f' && (pos += v; depth += v * aim)
     end
 
     depth * pos
@@ -53,6 +42,6 @@ end
 
 
 @btime part2(instructions)
-# 15.284 μs (1 allocation: 16 bytes)
+# 14.921 μs (1 allocation: 16 bytes)
 
 println("Part2 = $(part2(instructions))")

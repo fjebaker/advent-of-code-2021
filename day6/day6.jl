@@ -41,7 +41,7 @@ end
 living = parse_fish("day6/input.txt")
 
 @btime part1(inp) setup = (inp = deepcopy(living))
-# 369.252 ns (1 allocation: 16 bytes)
+# 309.025 ns (1 allocation: 16 bytes)
 
 @btime part2(inp) setup = (inp = deepcopy(living))
 # 1.122 μs (1 allocation: 16 bytes)
