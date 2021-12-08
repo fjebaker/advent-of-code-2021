@@ -1,7 +1,5 @@
 using BenchmarkTools
 
-
-
 medianpos(crabs) = round(Int, median(crabs))
 fuelneeded(crabs, pos) = sum(i -> abs(i-pos), crabs)
 
@@ -24,6 +22,7 @@ function part2(crabs)
     minfuel
 end
 
+crabs = parse.(Int, split(readline("day7/input.txt"), ','))
 
 @btime part1($crabs)
 # 1.994 μs (1 allocation: 7.94 KiB)
@@ -36,6 +35,5 @@ println("Part1: $(part2(crabs))")
 
 
 # one liner solutions
-crabs = parse.(Int, split(readline("day7/input.txt"), ','))
 part1(crabs) = crabs .- median(crabs) .|> abs |> sum
 part2(crabs) = minimum(sum(map(i->i*(i+1)÷2, abs.(crabs .- i)) for i in 0:maximum(crabs)))
