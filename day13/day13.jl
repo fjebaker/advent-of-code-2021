@@ -46,6 +46,7 @@ function foldalong(mat, axis, index)
     
 end
 
+# visualisation
 function display(mat)
     height, width = size(mat)
     for j in height:-1:1
@@ -72,18 +73,7 @@ function part2(paper, folds)
     folded
 end
 
-#part1(paper, folds)
-
-#folded = part2(paper, folds)
-#display(folded)
-
-
-foldx(paper, x) = paper[:, 1:x-1] += paper[:, end:-1:x+1]
-foldy(paper, y) = paper[1:y-1, :] += paper[end:-1:y+1, :]
-
-#folded = reduce(foldpaper, folds; init=paper)
-# display(folded)
-
+# alternative implementation:
 
 # parsing
 toint(s) = parse(Int, s) + 1

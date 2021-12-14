@@ -1,3 +1,4 @@
+using BenchmarkTools
 import DataStructures: DefaultDict
 
 function parse_input(path)
@@ -53,4 +54,13 @@ polymer, mapping = parse_input("day14/input.txt")
 part1(polymer, mapping) = countafter(polymer, mapping, days=10)
 part2(polymer, mapping) = countafter(polymer, mapping, days=40)
 
-part2(polymer, mapping)
+
+# algorithms not great, so performance is slow 
+@btime part1($polymer, $mapping)
+# 331.324 μs (4356 allocations: 200.64 KiB)
+
+@btime part2($polymer, $mapping)
+# 1.482 ms (19416 allocations: 859.23 KiB)
+
+println("Part1: $(part2(polymer, mapping)))")
+println("Part2: $(part2(polymer, mapping)))")
