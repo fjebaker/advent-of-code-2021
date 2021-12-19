@@ -6,32 +6,32 @@ using JSON
 
 import Base.:+
 
-mutable struct ShellfishNumber
-    l::Union{ShellfishNumber, Int}
-    r::Union{ShellfishNumber, Int}
+mutable struct SnailfishNumber
+    l::Union{SnailfishNumber, Int}
+    r::Union{SnailfishNumber, Int}
 end
 
-Base.:+(s1::ShellfishNumber, s2::ShellfishNumber) = ShellfishNumber(s1, s2)
+Base.:+(s1::SnailfishNumber, s2::SnailfishNumber) = SnailfishNumber(s1, s2)
 
-Base.:(==)(s1::ShellfishNumber, s2::ShellfishNumber) = s1.l == s2.l && s1.r == s2.r
-Base.:(==)(s::ShellfishNumber, i::Int) = false
+Base.:(==)(s1::SnailfishNumber, s2::SnailfishNumber) = s1.l == s2.l && s1.r == s2.r
+Base.:(==)(s::SnailfishNumber, i::Int) = false
 
-Base.show(io::IO, s::ShellfishNumber) = write(io, "[$(s.l) - $(s.r)]")
+Base.show(io::IO, s::SnailfishNumber) = write(io, "[$(s.l) - $(s.r)]")
 
-toshellfish(v::Int) = v
-toshellfish(v) = ShellfishNumber(toshellfish(first(v)), toshellfish(last(v)))
-toshellfish(s::String) = toshellfish(JSON.parse(s))
+tosnailfish(v::Int) = v
+tosnailfish(v) = SnailfishNumber(tosnailfish(first(v)), tosnailfish(last(v)))
+tosnailfish(s::String) = tosnailfish(JSON.parse(s))
 
-parse_input(path) = toshellfish.(eachline(path))
+parse_input(path) = tosnailfish.(eachline(path))
 
-function walkends(s::ShellfishNumber; collection=ShellfishNumber[])
-    if s.r isa Int && s.l isa ShellfishNumber
+function walkends(s::SnailfishNumber; collection=SnailfishNumber[])
+    if s.r isa Int && s.l isa SnailfishNumber
         walkends(s.l, collection=collection)
         push!(collection, s)
-    elseif s.l isa Int && s.r isa ShellfishNumber
+    elseif s.l isa Int && s.r isa SnailfishNumber
         push!(collection, s)
         walkends(s.r, collection=collection)
-    elseif s.l isa ShellfishNumber && s.r isa ShellfishNumber
+    elseif s.l isa SnailfishNumber && s.r isa SnailfishNumber
         walkends(s.l, collection=collection)
         walkends(s.r, collection=collection)
     elseif s.r isa Int && s.l isa Int
@@ -40,17 +40,17 @@ function walkends(s::ShellfishNumber; collection=ShellfishNumber[])
     collection
 end
 
-getexploding(s::ShellfishNumber) = getexploding(s, s, 0)
+getexploding(s::SnailfishNumber) = getexploding(s, s, 0)
 
-function getexploding(s::ShellfishNumber, parent::ShellfishNumber, depth::Int)::Tuple{Int, ShellfishNumber, ShellfishNumber}
+function getexploding(s::SnailfishNumber, parent::SnailfishNumber, depth::Int)::Tuple{Int, SnailfishNumber, SnailfishNumber}
     if depth ≥ 4 && s.l isa Int && s.r isa Int
         return (depth, parent, s)
     end
 
-    node = s.l isa Int ? (0, s, s) : getexploding(s.l, s, depth+1)
+    node = s.l isa Int ? (0, parent, s) : getexploding(s.l, s, depth+1)
     node[1] > 0 && return node
 
-    node = s.r isa Int ? (0, s, s) : getexploding(s.r, s, depth+1)
+    node = s.r isa Int ? (0, parent, s) : getexploding(s.r, s, depth+1)
     return node
 end
 
@@ -91,9 +91,9 @@ function explode!(s; one=false)
 end
 
 function split!(v::Int)
-    v > 9 ? (ShellfishNumber(floor(Int, v/2), ceil(Int, v/2)), true) : (v, false)
+    v > 9 ? (SnailfishNumber(floor(Int, v/2), ceil(Int, v/2)), true) : (v, false)
 end
-function split!(s::ShellfishNumber)
+function split!(s::SnailfishNumber)
     (s.l, m) = split!(s.l)
     if m
         return (s=s, changed=true)
@@ -111,50 +111,50 @@ function reduce!(s)
 end
 
 @testset "Explodes" begin
-    sf = toshellfish("[[[[[9,8],1],2],3],4]")
+    sf = tosnailfish("[[[[[9,8],1],2],3],4]")
     explodeone!(sf)
-    @test sf == toshellfish("[[[[0,9],2],3],4]")
+    @test sf == tosnailfish("[[[[0,9],2],3],4]")
 
-    sf = toshellfish("[7,[6,[5,[4,[3,2]]]]]")
+    sf = tosnailfish("[7,[6,[5,[4,[3,2]]]]]")
     explodeone!(sf)
-    @test sf == toshellfish("[7,[6,[5,[7,0]]]]")
+    @test sf == tosnailfish("[7,[6,[5,[7,0]]]]")
 
-    sf = toshellfish("[[6,[5,[4,[3,2]]]],1]")
+    sf = tosnailfish("[[6,[5,[4,[3,2]]]],1]")
     explodeone!(sf)
-    @test sf == toshellfish("[[6,[5,[7,0]]],3]")
+    @test sf == tosnailfish("[[6,[5,[7,0]]],3]")
 
-    sf = toshellfish("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
+    sf = tosnailfish("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]")
     explodeone!(sf)
-    @test sf == toshellfish("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]") 
+    @test sf == tosnailfish("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]") 
 
-    sf = toshellfish("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")
+    sf = tosnailfish("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]")
     explodeone!(sf)
-    @test sf == toshellfish("[[3,[2,[8,0]]],[9,[5,[7,0]]]]")
+    @test sf == tosnailfish("[[3,[2,[8,0]]],[9,[5,[7,0]]]]")
 end
 
 @testset "Operations" begin
-    sf = toshellfish("[11, 2]")
+    sf = tosnailfish("[11, 2]")
     split!(sf)
-    @test sf == toshellfish("[[5, 6], 2]")
+    @test sf == tosnailfish("[[5, 6], 2]")
 
-    sf1 = toshellfish("[[[[4,3],4],4],[7,[[8,4],9]]]")
-    sf2 = toshellfish("[1,1]")
+    sf1 = tosnailfish("[[[[4,3],4],4],[7,[[8,4],9]]]")
+    sf2 = tosnailfish("[1,1]")
     sf3 = sf1 + sf2 
 
-    @test sf3 == toshellfish("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
+    @test sf3 == tosnailfish("[[[[[4,3],4],4],[7,[[8,4],9]]],[1,1]]")
     reduce!(sf3)
-    @test sf3 == toshellfish("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
+    @test sf3 == tosnailfish("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
 end
 
 @testset "Summations & Reductions" begin
-    nums = toshellfish.(["[1,1]", "[2,2]", "[3,3]", "[4,4]"])
-    @test (sum(nums)) == toshellfish("[[[[1,1],[2,2]],[3,3]],[4,4]]")
+    nums = tosnailfish.(["[1,1]", "[2,2]", "[3,3]", "[4,4]"])
+    @test (sum(nums)) == tosnailfish("[[[[1,1],[2,2]],[3,3]],[4,4]]")
 
-    sf = toshellfish("[[[[0, [4, 5]], [0, 0]], [[[4, 5], [2, 6]], [9, 5]]], [7, [[[3, 7], [4, 3]], [[6, 3], [8, 8]]]]]")
-    @test reduce!(sf).s == toshellfish("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]")
+    sf = tosnailfish("[[[[0, [4, 5]], [0, 0]], [[[4, 5], [2, 6]], [9, 5]]], [7, [[[3, 7], [4, 3]], [[6, 3], [8, 8]]]]]")
+    @test reduce!(sf).s == tosnailfish("[[[[4,0],[5,4]],[[7,7],[6,0]]],[[8,[7,7]],[[7,9],[5,0]]]]")
 end
 
-function magnitude(sf::ShellfishNumber)
+function magnitude(sf::SnailfishNumber)
     left = 3 * (sf.l isa Int ? sf.l : magnitude(sf.l))
     right = 2 * (sf.r isa Int ? sf.r : magnitude(sf.r))
     return left + right
@@ -202,5 +202,7 @@ p2 = @btime part2(n) setup = (n = deepcopy(nums2))
 
 println("Part1: $p1")
 println("Part2: $p2")
+
+
 
 
