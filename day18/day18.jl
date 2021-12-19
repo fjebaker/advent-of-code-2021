@@ -16,55 +16,46 @@ Base.:+(s1::ShellfishNumber, s2::ShellfishNumber) = ShellfishNumber(s1, s2)
 Base.:(==)(s1::ShellfishNumber, s2::ShellfishNumber) = s1.l == s2.l && s1.r == s2.r
 Base.:(==)(s::ShellfishNumber, i::Int) = false
 
-Base.show(io::IO, s::ShellfishNumber) = write(io, "[$(s.l), $(s.r)]")
+Base.show(io::IO, s::ShellfishNumber) = write(io, "[$(s.l) - $(s.r)]")
 
 toshellfish(v::Int) = v
 toshellfish(v) = ShellfishNumber(toshellfish(first(v)), toshellfish(last(v)))
 toshellfish(s::String) = toshellfish(JSON.parse(s))
 
-function parse_input(path)
-    toshellfish.(eachline(path))
-end
+parse_input(path) = toshellfish.(eachline(path))
 
-function walkends(s::ShellfishNumber)
-    if typeof(s.r) == typeof(s.l) == Int
-        return (s,)
-    elseif typeof(s.l) == Int && typeof(s.r) == ShellfishNumber
-        return (s, walkends(s.r)...)
-    elseif typeof(s.r) == Int && typeof(s.l) == ShellfishNumber
-        return (walkends(s.l)..., s)
+function walkends(s::ShellfishNumber; collection=ShellfishNumber[])
+    if s.r isa Int && s.l isa ShellfishNumber
+        walkends(s.l, collection=collection)
+        push!(collection, s)
+    elseif s.l isa Int && s.r isa ShellfishNumber
+        push!(collection, s)
+        walkends(s.r, collection=collection)
+    elseif s.l isa ShellfishNumber && s.r isa ShellfishNumber
+        walkends(s.l, collection=collection)
+        walkends(s.r, collection=collection)
+    elseif s.r isa Int && s.l isa Int
+        push!(collection, s)
     end
-    (walkends(s.l)..., walkends(s.r)...)
+    collection
 end
 
-function getexploding(s::ShellfishNumber; depth=0, parent=nothing)
+getexploding(s::ShellfishNumber) = getexploding(s, s, 0)
+
+function getexploding(s::ShellfishNumber, parent::ShellfishNumber, depth::Int)::Tuple{Int, ShellfishNumber, ShellfishNumber}
     if depth ≥ 4 && s.l isa Int && s.r isa Int
         return (depth, parent, s)
     end
 
-    node = s.l isa Int ? (nothing, nothing, nothing) : getexploding(s.l, depth=depth+1, parent=s)
-    if !isnothing(node[1])
-        return node
-    end
-    node = s.r isa Int ? (nothing, nothing, nothing) : getexploding(s.r, depth=depth+1, parent=s)
+    node = s.l isa Int ? (0, s, s) : getexploding(s.l, s, depth+1)
+    node[1] > 0 && return node
+
+    node = s.r isa Int ? (0, s, s) : getexploding(s.r, s, depth+1)
     return node
 end
 
-function passleft!(s, v)
-    if typeof(s.r) == Int
-        s.r += v
-    else
-        s.l += v
-    end
-end
-
-function passright!(s, v)
-    if typeof(s.l) == Int
-        s.l += v
-    else
-        s.r += v
-    end
-end
+passleft!(s, v) = s.r isa Int ? (s.r += v) : (s.l += v)
+passright!(s, v) = s.l isa Int ? (s.l += v) : (s.r += v)
 
 explodeone!(s) = explode!(s, one=true)
 
@@ -72,9 +63,9 @@ function explode!(s; one=false)
     exploded = false
 
     (depth, parent, leaf) = getexploding(s)
-    while !isnothing(depth)      
+    while depth > 0
         # assemble layout of endpoints
-        layout = collect(walkends(s))
+        layout = collect(walkends(s)) # walkends2(s) #collect(walkends(s)) #walkends2(s) #
 
         # find which node we are
         i = first(i for (i, n) in enumerate(layout) if n === leaf)
@@ -114,11 +105,7 @@ end
 function reduce!(s)
     i = 0
     while explode!(s).changed || split!(s).changed
-        # @show s
         i += 1
-        if i > 1000
-            error("too many loops")
-        end
     end
     (s=s, changed= i > 0)
 end
@@ -202,18 +189,18 @@ end
 
 
 nums1 = parse_input("day18/input.txt")
+
+#benchmark(nums1[1], nums1[3])
+
 nums2 = deepcopy(nums1)
 
 p1 = @btime part1(n) setup = (n = deepcopy(nums1))
-# 2.487 ms (37052 allocations: 1.12 MiB)
+# 6.917 ms (115739 allocations: 6.35 MiB)
 
 p2 = @btime part2(n) setup = (n = deepcopy(nums2))
-# 507.431 ms (4519414 allocations: 141.37 MiB)
-
+# 298.614 ms (2006971 allocations: 107.78 MiB)
 
 println("Part1: $p1")
 println("Part2: $p2")
-
-
 
 
